@@ -1,43 +1,18 @@
-const http = require("http")
-const fs = require("fs")
+const express = require("express")
 
-const server = http.createServer((req, res) => {
-    const url = req.url
-    const method = req.method
+const app = express()
+const bodyParser = require("body-parser")
 
-    if (url === '/') {
-        res.write('<html>')
-        res.write('<head><title>Enter title</title></head>')
-        res.write(
-            '<body><form action="/message" method="POST"><input type="text" name="message"/><button type="submit">SEND</button></form></body>'
-        )
-        res.write('</html>')
-        return res.end()
-    }
+const adminRoutes = require("./routes/admin")
+const shopRoutes = require("./routes/shop")
 
-    if (url === "/message" && method === "POST") {
-        const body = [];
-        req.on('data', chunk => {
-            console.log(chunk)
-            body.push(chunk)
-        })
-        return req.on('end', () => {
-            const parsedBody = Buffer.concat(body).toString();
-            const message = parsedBody.split("=")[1];
-            fs.writeFile('message.txt', message, err => {
-                res.statusCode = 302;
-                res.setHeader
-            })
-        })
-    }
+app.use(bodyParser.urlencoded({ extended: true }))
 
-    res.setHeader("Content-Type", "text/html")
-    res.write('<html>')
-    res.write('<head><title>Enter title</title></head>')
-    res.write('<body>hello from node js server</body>')
-    res.write('</html>')
-    return res.end()
+app.use("/admin", adminRoutes)
+app.use("/shop", shopRoutes)
 
+app.use((req, res, next) => {
+    res.status(404).send("<h1>Page not found</h1>")
 })
 
-server.listen(3000)
+app.listen(3000)
